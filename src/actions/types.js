@@ -1,10 +1,10 @@
+// Defining all types of actions
 export const EMAIL_CHANGED = "email_changed";
-export const PASSWORD_CHANGED =
-"password_changed";
-export const LOGIN_USER_SUCCESS = "login_success";
-export const LOGIN_USER_ERROR = "login_error";
-export const START_LOADING = "start_loading";
+export const PASSWORD_CHANGED = "password_changed";
+export const LOGIN_USER_SUCCESS = "login_user_success";
+export const LOGIN_USER_FAIL = "login_user_fail";
+export const LOGIN_USER = "login_user";
+
 export const EMPLOYEE_UPDATE = "employee_update";
-export const EMPLOYEE_SUCCESS = "employee_success";
-export const EMPLOYEE_FAILED = "employee_failed";
-export const LOAD_ALL_EMPLOYEES = "employees_load";
+export const EMPLOYEE_CREATE = "employee_create";
+export const EMPLOYEES_FETCH_SUCCESS = "employee_fetch_success";

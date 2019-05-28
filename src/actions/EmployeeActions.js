@@ -1,62 +1,42 @@
-import { EMPLOYEE_UPDATE,EMPLOYEE_SUCCESS,EMPLOYEE_FAILED,LOAD_ALL_EMPLOYEES } from "./types";
+import firebase from "firebase";
+import {
+  EMPLOYEE_UPDATE,
+  EMPLOYEE_CREATE,
+  EMPLOYEES_FETCH_SUCCESS
+} from "./types";
 import { Actions } from "react-native-router-flux";
-import firebase from 'firebase';
 
 export const employeeUpdate = ({ prop, value }) => {
-    return {
-        type: EMPLOYEE_UPDATE,
-        payload: { prop, value }
-    };
+  return {
+    type: EMPLOYEE_UPDATE,
+    payload: { prop, value }
+  };
 };
 
-const employeeSuccess =
-    (dispatch, employee) => {
-        dispatch({
-            type: EMPLOYEE_SUCCESS,
-            payload: employee
-        });
-        Actions.main();
-        loadEmployees()(dispatch)
+export const employeeCreate = ({ name, phone, shift }) => {
+  // console.log(name, phone, shift);
+  const { currentUser } = firebase.auth();
+
+  return dispatch => {
+    firebase
+      .database()
+      .ref(`/users/${currentUser.uid}/employees`)
+      .push({ name, phone, shift })
+      .then(() => {
+        dispatch({ type: EMPLOYEE_CREATE }); //Clear the form after insert in fireabse
+        Actions.employeeList({ type: "reset" }); // Don't stack the app just add employee and reset to employeeList
+      });
+  };
 };
 
-const employeeError =
-    (dispatch, error) => {
-        //alert(error);
-        dispatch({
-            type: EMPLOYEE_FAILED,
-            payload: error
-        });
-    };
-
-export const addEmployee = ({ name,phone,shift }) => {
-    return dispatch => { 
-        firebase
-            .database()
-            .ref("users").push().set({name,phone,shift})
-            .then(() => {
-                employeeSuccess(dispatch,{name,phone,shift})
-            })
-            .catch((dbError) => {
-                alert(dbError)
-                employeeError(dispatch, dbError)
-            });
-    };
+export const employeesFetch = () => {
+  const { currentUser } = firebase.auth();
+  return dispatch => {
+    firebase
+      .database()
+      .ref(`/users/${currentUser.uid}/employees`)
+      .on("value", snapshot => {
+        dispatch({ type: EMPLOYEES_FETCH_SUCCESS, payload: snapshot.val() });
+      });
+  };
 };
-
-export const loadEmployees = () =>{
-    return dispatch => { 
-        firebase
-            .database()
-            .ref("users").once('value')
-            .then((data) => {
-                dispatch({
-                    type:LOAD_ALL_EMPLOYEES,
-                    payload:data.val()
-                })
-            })
-            .catch((dbError) => {
-                alert(dbError)
-                employeeError(dispatch, dbError)
-            });
-    };
-}

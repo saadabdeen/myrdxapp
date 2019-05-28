@@ -1,41 +1,49 @@
-import React, { Component } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { CustomButton, Card, CardSection, Input, SelectBox } from './common';
-import { connect } from 'react-redux';
-import { loadEmployees } from "../actions";
+import _ from "lodash";
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import { ListView, View, Text } from "react-native";
+import { employeesFetch } from "../actions";
+import ListItem from "./ListItem";
 
 class EmployeeList extends Component {
-  componentDidMount() {
-    this.props.loadEmployees();
+  componentWillMount() {
+    this.props.employeesFetch();
+    this.createDataSource(this.props);
   }
 
+  componentWillReceiveProps(nextProps) {
+    //this.props are old and nextProps will be recieved
+    this.createDataSource(nextProps);
+  }
+
+  createDataSource({ employees }) {
+    const ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 != r2
+    });
+
+    this.dataSource = ds.cloneWithRows(employees);
+  }
+
+  renderRow(employee) {
+    return <ListItem employee={employee} />;
+  }
   render() {
     return (
-      <ScrollView style={{ flex: 1 }}>
-
-        {Object.keys(this.props.employees).map((key, index) => (
-          <Card>
-            <CardSection>
-              <View>
-                <Text>{this.props.employees[key].name}</Text>
-                <Text>{this.props.employees[key].phone}</Text>
-                <Text>{this.props.employees[key].shift}</Text>
-              </View>
-            </CardSection>
-          </Card>
-        ))}
-      </ScrollView>
+      <ListView
+        enableEmptySections
+        dataSource={this.dataSource}
+        renderRow={this.renderRow}
+      />
     );
   }
 }
-
-const mapStateToProps = ({ employeeForm }) => {
-  const { employees } = employeeForm;
+const mapStateToProps = state => {
+  const employees = _.map(state.employees, (val, uid) => {
+    return { ...val, uid };
+  });
   return { employees };
 };
-
 export default connect(
   mapStateToProps,
-  { loadEmployees }
+  { employeesFetch }
 )(EmployeeList);
-
